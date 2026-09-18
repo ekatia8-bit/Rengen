@@ -221,7 +221,6 @@
             width: 100%; height: 100%;
         }
 
-        /* СЛОЙ 1 (НИЗ): Видео с цветными органами */
         .organs-video {
             z-index: 1;
             object-fit: cover;
@@ -230,7 +229,6 @@
             pointer-events: none;
         }
 
-        /* СЛОЙ 2 (ВЕРХ): Собака БЕЗ органов */
         .body-image {
             z-index: 2;
             background-image: url('glowing-body.jpg');
@@ -242,7 +240,6 @@
             mask-image: radial-gradient(circle 0px at 50% 50%, transparent 0%, black 100%);
         }
 
-        /* НЕВИДИМЫЕ интерактивные зоны органов */
         .organ-zone {
             position: absolute;
             z-index: 10;
@@ -253,13 +250,11 @@
             pointer-events: auto;
         }
 
-        /* ПОЗИЦИИ ОРГАНОВ */
         #zone-brain      { top: 33%;  left: 18%; width: 14%; height: 10%; }
         #zone-heart      { top: 48%;  left: 28%; width: 14%; height: 12%; }
         #zone-liver      { top: 50%;  left: 40%; width: 14%; height: 10%; }
         #zone-intestines { top: 56%;  left: 55%; width: 18%; height: 12%; }
 
-        /* Кнопка викторины в верхнем правом углу */
         .quiz-btn-top {
             position: absolute;
             top: 1rem;
@@ -280,7 +275,6 @@
 
         .quiz-btn-top:active { transform: scale(0.95); }
 
-        /* Кнопка полной викторины в нижнем правом углу */
         .quiz-btn-bottom {
             position: absolute;
             bottom: 2rem;
@@ -493,34 +487,53 @@
             margin: 0;
         }
 
-        .modal-desc {
-            color: var(--text-secondary);
+        .modal-fact {
+            color: var(--text-primary);
             line-height: 1.6;
             font-size: 0.95rem;
             margin: 0;
             flex: 1;
+            padding: 1rem;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 10px;
+            border-left: 3px solid var(--neon-cyan);
         }
 
-        .close-btn {
-            width: 100%;
-            padding: 1rem;
+        .modal-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 0.8rem;
             background: transparent;
             border: 2px solid var(--neon-cyan);
             color: var(--neon-cyan);
             border-radius: 10px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: auto;
         }
 
-        .close-btn:active {
+        .modal-btn:active {
             background: var(--neon-cyan);
             color: var(--bg-dark);
         }
 
-        /* ===== QUIZ SCREEN ===== */
+        .modal-btn.primary {
+            background: var(--neon-cyan);
+            color: var(--bg-dark);
+        }
+
+        .modal-btn.primary:active {
+            background: transparent;
+            color: var(--neon-cyan);
+        }
+
+        /* ===== FULL QUIZ SCREEN ===== */
         #quiz {
             position: fixed;
             top: 0; left: 0;
@@ -700,13 +713,12 @@
     <!-- ===== INTRO SCREEN ===== -->
     <section id="intro">
         <div class="intro-viewport">
-            <!-- ЗАМЕНИТЬ НА СВОЙ ФАЙЛ: neural-particles.mp4 -->
             <video id="bg-video" autoplay loop playsinline muted>
                 <source src="neural-particles.mp4" type="video/mp4">
             </video>
 
             <button class="sound-toggle" id="soundToggle" aria-label="Переключить звук">
-                <span id="soundIcon"></span>
+                <span id="soundIcon">🔇</span>
             </button>
 
             <div class="intro-content">
@@ -728,28 +740,21 @@
 
         <div class="game-container">
             <div class="viewport" id="viewport">
-                <!-- СЛОЙ 1 (НИЗ): Видео с цветными органами -->
-                <!-- ЗАМЕНИТЬ НА СВОЙ ФАЙЛ: organs-video.mp4 -->
                 <video class="layer organs-video" id="organsVideo" autoplay loop playsinline muted>
                     <source src="organs-video.mp4" type="video/mp4">
                 </video>
 
-                <!-- СЛОЙ 2 (ВЕРХ): Собака БЕЗ органов -->
-                <!-- ЗАМЕНИТЬ НА СВОЙ ФАЙЛ: glowing-body.jpg -->
                 <div class="layer body-image" id="bodyLayer"></div>
 
-                <!-- НЕВИДИМЫЕ интерактивные зоны органов -->
                 <div class="organ-zone" id="zone-brain" data-organ="brain"></div>
                 <div class="organ-zone" id="zone-heart" data-organ="heart"></div>
                 <div class="organ-zone" id="zone-liver" data-organ="liver"></div>
                 <div class="organ-zone" id="zone-intestines" data-organ="intestines"></div>
 
-                <!-- Кнопка мини-викторины в верхнем правом углу -->
                 <button class="quiz-btn-top" id="miniQuizBtn">?</button>
             </div>
         </div>
 
-        <!-- Кнопка полной викторины в нижнем правом углу -->
         <button class="quiz-btn-bottom" id="fullQuizBtn">?</button>
     </section>
 
@@ -758,7 +763,7 @@
         <div class="mini-quiz-content">
             <div class="mini-quiz-header">
                 <h3 class="mini-quiz-title">Мини-викторина</h3>
-                <div class="mini-quiz-progress" id="miniQuizProgress">Вопрос 1 из 3</div>
+                <div class="mini-quiz-progress" id="miniQuizProgress">Вопрос 1 из 4</div>
             </div>
             <div id="miniQuizContainer"></div>
             <button class="mini-quiz-close" id="closeMiniQuizBtn">Закрыть</button>
@@ -775,8 +780,11 @@
             </div>
             <div class="modal-body">
                 <h3 class="modal-title" id="modalTitle">Орган</h3>
-                <p class="modal-desc" id="modalDesc">Описание</p>
-                <button class="close-btn" id="closeModalBtn">Закрыть</button>
+                <p class="modal-fact" id="modalFact">Факт</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn" id="nextFactBtn">Следующий факт</button>
+                    <button class="modal-btn primary" id="closeModalBtn">Закрыть</button>
+                </div>
             </div>
         </div>
     </div>
@@ -785,7 +793,7 @@
     <section id="quiz" style="display: none;">
         <div class="quiz-header">
             <h2 class="quiz-title">Проверка знаний</h2>
-            <div class="quiz-progress" id="quizProgress">Вопрос 1 из 3</div>
+            <div class="quiz-progress" id="quizProgress">Вопрос 1 из 4</div>
         </div>
         <div id="quizContainer"></div>
     </section>
@@ -794,7 +802,7 @@
     <section id="result" style="display: none;">
         <div class="result-icon"></div>
         <h2 class="result-title">Исследование завершено!</h2>
-        <div class="result-score" id="resultScore">2/3</div>
+        <div class="result-score" id="resultScore">2/4</div>
         <p class="result-text" id="resultText">Отличная работа!</p>
         <button class="restart-btn" onclick="location.reload()">Начать заново</button>
     </section>
@@ -806,7 +814,9 @@
             currentQuestion: 0,
             score: 0,
             miniQuizQuestion: 0,
-            miniQuizScore: 0
+            miniQuizScore: 0,
+            currentOrgan: null,
+            shownFacts: new Set()
         };
 
         const el = {
@@ -825,7 +835,8 @@
             organModal:  document.getElementById('organModal'),
             modalVideo:  document.getElementById('modalVideo'),
             modalTitle:  document.getElementById('modalTitle'),
-            modalDesc:   document.getElementById('modalDesc'),
+            modalFact:   document.getElementById('modalFact'),
+            nextFactBtn: document.getElementById('nextFactBtn'),
             closeModalBtn: document.getElementById('closeModalBtn'),
             miniQuizBtn:    document.getElementById('miniQuizBtn'),
             fullQuizBtn:    document.getElementById('fullQuizBtn'),
@@ -839,38 +850,83 @@
             resultText:    document.getElementById('resultText')
         };
 
+        // 10 фактов для каждого органа
         const organsData = {
             brain: {
-                title: ' Головной мозг',
-                desc: 'Центр управления всем организмом! Мозг собаки обрабатывает информацию в 10 раз быстрее человеческого. Именно здесь рождаются мысли, команды движения и эмоции вашего питомца.',
-                video: 'brain.mp4'
+                title: '🧠 Головной мозг',
+                video: 'brain.mp4',
+                facts: [
+                    'Мозг собаки обрабатывает информацию в 10 раз быстрее человеческого.',
+                    'Собаки могут запоминать до 1000 слов и жестов.',
+                    'Обонятельная часть мозга собаки в 40 раз больше, чем у человека.',
+                    'Собаки видят сны так же, как люди — их мозг активен во сне.',
+                    'Мозг собаки весит около 72 граммов в среднем.',
+                    'Собаки способны чувствовать эмоции хозяина через запах.',
+                    'Нейроны мозга собаки работают по тем же принципам, что и человеческие.',
+                    'Собаки могут предсказывать эпилептические приступы за 45 минут.',
+                    'Мозг собаки развивается полностью к 2 годам жизни.',
+                    'Собаки используют правое полушарие для обработки эмоций.'
+                ]
             },
             heart: {
                 title: '❤️ Сердце',
-                desc: 'Неутомимый насос, бьющийся 70–120 раз в минуту! Сердце собаки перекачивает кровь по всему телу, доставляя кислород к каждой клеточке.',
-                video: 'heart.mp4'
+                video: 'heart.mp4',
+                facts: [
+                    'Сердце собаки бьётся 70–120 раз в минуту в покое.',
+                    'У маленьких пород сердце бьётся быстрее — до 180 ударов.',
+                    'Сердце собаки перекачивает около 200 мл крови за одно сокращение.',
+                    'Собачье сердце составляет около 0.8% от массы тела.',
+                    'Сердце собаки может биться даже после извлечения из тела.',
+                    'У собак 4 камеры сердца, как у людей.',
+                    'Собаки могут чувствовать сердцебиение хозяина.',
+                    'Сердце собаки бьётся синхронно с сердцем хозяина во время отдыха.',
+                    'Максимальная частота сердцебиения собаки — 220 ударов в минуту.',
+                    'Сердце собаки работает без остановки всю жизнь — 10-15 лет.'
+                ]
             },
             liver: {
                 title: ' Печень',
-                desc: 'Главная химическая лаборатория организма! Печень собаки обезвреживает токсины и способна регенерировать даже после удаления 70%.',
-                video: 'liver.mp4'
+                video: 'liver.mp4',
+                facts: [
+                    'Печень собаки способна регенерировать даже после удаления 70%.',
+                    'Печень выполняет более 500 функций в организме.',
+                    'Печень собаки вырабатывает желчь для переваривания жиров.',
+                    'Печень фильтрует кровь от токсинов круглосуточно.',
+                    'Печень собаки хранит запас витаминов A, D и B12.',
+                    'Печень может восстанавливаться полностью за 6-8 недель.',
+                    'Печень собаки весит около 3-4% от массы тела.',
+                    'Печень участвует в свёртывании крови.',
+                    'Печень собаки более устойчива к токсинам, чем человеческая.',
+                    'Печень вырабатывает белки, необходимые для иммунитета.'
+                ]
             },
             intestines: {
                 title: '🌀 Кишечник',
-                desc: 'Длинный извилистый тоннель длиной до 5 метров! Кишечник собаки всасывает питательные вещества и содержит миллиарды полезных бактерий.',
-                video: 'intestines.mp4'
+                video: 'intestines.mp4',
+                facts: [
+                    'Кишечник собаки достигает 5 метров в длину.',
+                    'В кишечнике собаки живут миллиарды полезных бактерий.',
+                    'Кишечник называют «вторым мозгом» — он влияет на настроение.',
+                    'Тонкий кишечник собаки всасывает 90% питательных веществ.',
+                    'Кишечник собаки переваривает пищу за 8-10 часов.',
+                    'Микрофлора кишечника собаки уникальна для каждого питомца.',
+                    'Кишечник собаки более короткий, чем у травоядных.',
+                    'Кишечник вырабатывает 95% серотонина — гормона счастья.',
+                    'Кишечник собаки может переваривать кости.',
+                    'Здоровье кишечника напрямую влияет на иммунитет собаки.'
+                ]
             }
         };
 
-        // Вопросы для мини-викторины (3 вопроса с 3 вариантами)
-        const miniQuizQuestions = [
+        // Пул из 10 вопросов для викторины
+        const quizQuestionPool = [
             {
                 question: 'Какой длины кишечник собаки?',
                 answers: ['До 3 метров', 'До 5 метров', 'До 10 метров'],
                 correct: 1
             },
             {
-                question: 'Сколько раз в минуту бьётся сердце собаки?',
+                question: 'Сколько раз в минуту бьётся сердце собаки в покое?',
                 answers: ['30-60 раз', '70-120 раз', '150-200 раз'],
                 correct: 1
             },
@@ -878,27 +934,53 @@
                 question: 'Во сколько раз мозг собаки быстрее человеческого?',
                 answers: ['В 5 раз', 'В 10 раз', 'В 20 раз'],
                 correct: 1
-            }
-        ];
-
-        // Вопросы для полной викторины
-        const fullQuizQuestions = [
+            },
             {
-                question: 'Во сколько раз мозг собаки обрабатывает информацию быстрее человеческого?',
-                answers: ['В 2 раза', 'В 10 раз', 'В 5 раз', 'Одинаково'],
+                question: 'Какой процент печени может восстановиться?',
+                answers: ['30%', '50%', '70%'],
+                correct: 2
+            },
+            {
+                question: 'Сколько слов может запомнить собака?',
+                answers: ['До 100', 'До 500', 'До 1000'],
+                correct: 2
+            },
+            {
+                question: 'Сколько функций выполняет печень?',
+                answers: ['Около 100', 'Около 300', 'Более 500'],
+                correct: 2
+            },
+            {
+                question: 'За сколько времени печень восстанавливается полностью?',
+                answers: ['2-3 недели', '6-8 недель', '6 месяцев'],
                 correct: 1
             },
             {
-                question: 'Какой процент печени может восстановиться после удаления?',
-                answers: ['30%', '50%', '70%', '100%'],
+                question: 'Сколько серотонина вырабатывает кишечник?',
+                answers: ['50%', '75%', '95%'],
                 correct: 2
             },
             {
-                question: 'Какую длину может достигать кишечник собаки?',
-                answers: ['До 1 метра', 'До 3 метров', 'До 5 метров', 'До 10 метров'],
+                question: 'Во сколько раз обонятельная часть мозга собаки больше человеческой?',
+                answers: ['В 10 раз', 'В 20 раз', 'В 40 раз'],
                 correct: 2
+            },
+            {
+                question: 'За сколько часов собака переваривает пищу?',
+                answers: ['2-4 часа', '8-10 часов', '24 часа'],
+                correct: 1
             }
         ];
+
+        // Перемешивание массива
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
         function updateFlashlight(clientX, clientY) {
             const rect = el.viewport.getBoundingClientRect();
@@ -930,6 +1012,7 @@
         el.soundToggle.addEventListener('click', toggleSound);
         el.startBtn.addEventListener('click', startGame);
         el.closeModalBtn.addEventListener('click', closeModal);
+        el.nextFactBtn.addEventListener('click', showNextFact);
         el.miniQuizBtn.addEventListener('click', startMiniQuiz);
         el.fullQuizBtn.addEventListener('click', startFullQuiz);
         el.closeMiniQuizBtn.addEventListener('click', closeMiniQuiz);
@@ -966,22 +1049,79 @@
             el.bodyLayer.style.maskImage = 'radial-gradient(circle 0px at 50% 50%, transparent 0%, black 100%)';
         }
 
-        // ===== MINI QUIZ FUNCTIONS =====
+        // ===== ORGAN MODAL WITH RANDOM FACTS =====
+        function openOrganModal(organKey) {
+            const data = organsData[organKey];
+            if (!data) return;
+
+            state.currentOrgan = organKey;
+            state.shownFacts.clear();
+
+            el.modalTitle.textContent = data.title;
+            
+            const source = el.modalVideo.querySelector('source');
+            source.src = data.video;
+            el.modalVideo.load();
+            el.modalVideo.play().catch(() => {});
+
+            showRandomFact();
+
+            el.organModal.classList.add('active');
+
+            if (!state.discovered.has(organKey)) {
+                state.discovered.add(organKey);
+                updateProgress();
+            }
+        }
+
+        function showRandomFact() {
+            const data = organsData[state.currentOrgan];
+            if (!data) return;
+
+            // Получаем факты, которые ещё не показывали
+            const availableFacts = data.facts.filter((_, idx) => !state.shownFacts.has(idx));
+            
+            // Если все факты показаны, сбрасываем
+            if (availableFacts.length === 0) {
+                state.shownFacts.clear();
+            }
+
+            // Выбираем случайный факт
+            const randomIndex = Math.floor(Math.random() * data.facts.length);
+            state.shownFacts.add(randomIndex);
+            
+            el.modalFact.textContent = data.facts[randomIndex];
+        }
+
+        function showNextFact() {
+            showRandomFact();
+        }
+
+        function closeModal() {
+            el.organModal.classList.remove('active');
+            el.modalVideo.pause();
+        }
+
+        // ===== MINI QUIZ WITH 4 RANDOM QUESTIONS =====
         function startMiniQuiz() {
             state.miniQuizQuestion = 0;
             state.miniQuizScore = 0;
+            
+            // Выбираем 4 случайных вопроса из пула
+            state.currentMiniQuizQuestions = shuffleArray(quizQuestionPool).slice(0, 4);
+            
             el.miniQuizOverlay.classList.add('active');
             showMiniQuizQuestion();
         }
 
         function showMiniQuizQuestion() {
-            if (state.miniQuizQuestion >= miniQuizQuestions.length) {
+            if (state.miniQuizQuestion >= state.currentMiniQuizQuestions.length) {
                 showMiniQuizResult();
                 return;
             }
 
-            const q = miniQuizQuestions[state.miniQuizQuestion];
-            el.miniQuizProgress.textContent = `Вопрос ${state.miniQuizQuestion + 1} из ${miniQuizQuestions.length}`;
+            const q = state.currentMiniQuizQuestions[state.miniQuizQuestion];
+            el.miniQuizProgress.textContent = `Вопрос ${state.miniQuizQuestion + 1} из ${state.currentMiniQuizQuestions.length}`;
 
             let html = `<div class="mini-quiz-question">${q.question}</div>
                 <div class="mini-quiz-answers">`;
@@ -1000,10 +1140,9 @@
 
         function handleMiniQuizAnswer(e) {
             const idx = parseInt(e.target.dataset.index);
-            const q = miniQuizQuestions[state.miniQuizQuestion];
+            const q = state.currentMiniQuizQuestions[state.miniQuizQuestion];
             const buttons = el.miniQuizContainer.querySelectorAll('.mini-quiz-answer');
 
-            // Блокируем все кнопки
             buttons.forEach(btn => btn.classList.add('disabled'));
 
             if (idx === q.correct) {
@@ -1014,7 +1153,6 @@
                 buttons[q.correct].classList.add('correct');
             }
 
-            // Через 2 секунды переходим к следующему вопросу
             setTimeout(() => {
                 state.miniQuizQuestion++;
                 showMiniQuizQuestion();
@@ -1023,11 +1161,11 @@
 
         function showMiniQuizResult() {
             let html = `<div style="text-align: center; padding: 1rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">${state.miniQuizScore === miniQuizQuestions.length ? '🎉' : state.miniQuizScore >= 2 ? '👍' : ''}</div>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">${state.miniQuizScore === state.currentMiniQuizQuestions.length ? '🎉' : state.miniQuizScore >= 2 ? '👍' : ''}</div>
                 <div style="font-size: 1.5rem; color: var(--neon-cyan); margin-bottom: 0.5rem;">Результат</div>
-                <div style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;">${state.miniQuizScore}/${miniQuizQuestions.length}</div>
+                <div style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;">${state.miniQuizScore}/${state.currentMiniQuizQuestions.length}</div>
                 <div style="color: var(--text-secondary);">
-                    ${state.miniQuizScore === miniQuizQuestions.length ? 'Отлично! Вы эксперт!' : 
+                    ${state.miniQuizScore === state.currentMiniQuizQuestions.length ? 'Отлично! Вы эксперт!' : 
                       state.miniQuizScore >= 2 ? 'Хороший результат!' : 'Продолжайте учиться!'}
                 </div>
             </div>`;
@@ -1040,23 +1178,27 @@
             el.miniQuizOverlay.classList.remove('active');
         }
 
-        // ===== FULL QUIZ FUNCTIONS =====
+        // ===== FULL QUIZ WITH 4 RANDOM QUESTIONS =====
         function startFullQuiz() {
             el.game.style.display = 'none';
             el.quiz.style.display = 'flex';
             state.currentQuestion = 0;
             state.score = 0;
+            
+            // Выбираем 4 случайных вопроса из пула
+            state.currentFullQuizQuestions = shuffleArray(quizQuestionPool).slice(0, 4);
+            
             showFullQuizQuestion();
         }
 
         function showFullQuizQuestion() {
-            if (state.currentQuestion >= fullQuizQuestions.length) {
+            if (state.currentQuestion >= state.currentFullQuizQuestions.length) {
                 showFullQuizResult();
                 return;
             }
 
-            const q = fullQuizQuestions[state.currentQuestion];
-            el.quizProgress.textContent = `Вопрос ${state.currentQuestion + 1} из ${fullQuizQuestions.length}`;
+            const q = state.currentFullQuizQuestions[state.currentQuestion];
+            el.quizProgress.textContent = `Вопрос ${state.currentQuestion + 1} из ${state.currentFullQuizQuestions.length}`;
 
             let html = `<div class="question-card">
                 <div class="question-text">${q.question}</div>
@@ -1076,7 +1218,7 @@
 
         function handleFullQuizAnswer(e) {
             const idx = parseInt(e.target.dataset.index);
-            const q = fullQuizQuestions[state.currentQuestion];
+            const q = state.currentFullQuizQuestions[state.currentQuestion];
             const buttons = el.quizContainer.querySelectorAll('.answer-btn');
 
             buttons.forEach(btn => btn.classList.add('disabled'));
@@ -1099,41 +1241,15 @@
             el.quiz.style.display = 'none';
             el.result.style.display = 'flex';
 
-            el.resultScore.textContent = `${state.score}/${fullQuizQuestions.length}`;
+            el.resultScore.textContent = `${state.score}/${state.currentFullQuizQuestions.length}`;
 
-            if (state.score === fullQuizQuestions.length) {
+            if (state.score === state.currentFullQuizQuestions.length) {
                 el.resultText.textContent = 'Великолепно! Вы настоящий эксперт в анатомии! 🎉';
-            } else if (state.score >= fullQuizQuestions.length / 2) {
+            } else if (state.score >= state.currentFullQuizQuestions.length / 2) {
                 el.resultText.textContent = 'Хороший результат! Продолжайте изучать анатомию! 👍';
             } else {
                 el.resultText.textContent = 'Неплохо! Попробуйте ещё раз, чтобы узнать больше! 💪';
             }
-        }
-
-        // ===== ORGAN MODAL FUNCTIONS =====
-        function openOrganModal(organKey) {
-            const data = organsData[organKey];
-            if (!data) return;
-
-            el.modalTitle.textContent = data.title;
-            el.modalDesc.textContent = data.desc;
-
-            const source = el.modalVideo.querySelector('source');
-            source.src = data.video;
-            el.modalVideo.load();
-            el.modalVideo.play().catch(() => {});
-
-            el.organModal.classList.add('active');
-
-            if (!state.discovered.has(organKey)) {
-                state.discovered.add(organKey);
-                updateProgress();
-            }
-        }
-
-        function closeModal() {
-            el.organModal.classList.remove('active');
-            el.modalVideo.pause();
         }
 
         function updateProgress() {
