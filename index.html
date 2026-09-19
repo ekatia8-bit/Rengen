@@ -255,6 +255,7 @@
         #zone-liver      { top: 50%;  left: 40%; width: 14%; height: 10%; }
         #zone-intestines { top: 56%;  left: 55%; width: 18%; height: 12%; }
 
+        /* ТОЛЬКО ОДНА кнопка викторины — в верхнем правом углу */
         .quiz-btn-top {
             position: absolute;
             top: 1rem;
@@ -274,26 +275,6 @@
         }
 
         .quiz-btn-top:active { transform: scale(0.95); }
-
-        .quiz-btn-bottom {
-            position: absolute;
-            bottom: 2rem;
-            right: 2rem;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--neon-cyan);
-            color: var(--bg-dark);
-            border: none;
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 20px var(--neon-glow);
-            z-index: 30;
-            transition: transform 0.3s;
-        }
-
-        .quiz-btn-bottom:active { transform: scale(0.95); }
 
         /* ===== MINI QUIZ MODAL ===== */
         .mini-quiz-overlay {
@@ -456,12 +437,14 @@
             transform: scale(1);
         }
 
+        /* Контейнер видео без стандартных контролов */
         .modal-video-container {
             width: 100%;
             aspect-ratio: 9/16;
             max-height: 50vh;
             background: #000;
             flex-shrink: 0;
+            position: relative;
         }
 
         .modal-video {
@@ -469,6 +452,40 @@
             height: 100%;
             object-fit: contain;
             display: block;
+        }
+
+        /* Кастомная кнопка play/pause поверх видео */
+        .video-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.8);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 5;
+        }
+
+        .video-play-btn:active {
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+
+        .video-play-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .video-play-btn svg {
+            width: 30px;
+            height: 30px;
+            fill: var(--bg-dark);
         }
 
         .modal-body { 
@@ -497,6 +514,12 @@
             background: rgba(0, 212, 255, 0.05);
             border-radius: 10px;
             border-left: 3px solid var(--neon-cyan);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .modal-buttons {
@@ -751,11 +774,10 @@
                 <div class="organ-zone" id="zone-liver" data-organ="liver"></div>
                 <div class="organ-zone" id="zone-intestines" data-organ="intestines"></div>
 
+                <!-- ТОЛЬКО ОДНА кнопка викторины -->
                 <button class="quiz-btn-top" id="miniQuizBtn">?</button>
             </div>
         </div>
-
-        <button class="quiz-btn-bottom" id="fullQuizBtn">?</button>
     </section>
 
     <!-- ===== MINI QUIZ MODAL ===== -->
@@ -774,15 +796,21 @@
     <div class="modal-overlay" id="organModal">
         <div class="modal-content">
             <div class="modal-video-container">
-                <video class="modal-video" id="modalVideo" controls playsinline>
+                <!-- Убран атрибут controls -->
+                <video class="modal-video" id="modalVideo" playsinline>
                     <source src="" type="video/mp4">
                 </video>
+                <!-- Кастомная кнопка play/pause -->
+                <button class="video-play-btn" id="videoPlayBtn">
+                    <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="pauseIcon" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
             </div>
             <div class="modal-body">
                 <h3 class="modal-title" id="modalTitle">Орган</h3>
                 <p class="modal-fact" id="modalFact">Факт</p>
                 <div class="modal-buttons">
-                    <button class="modal-btn" id="nextFactBtn">Следующий факт</button>
+                    <button class="modal-btn" id="nextFactBtn">🎲 Новый факт</button>
                     <button class="modal-btn primary" id="closeModalBtn">Закрыть</button>
                 </div>
             </div>
@@ -816,7 +844,7 @@
             miniQuizQuestion: 0,
             miniQuizScore: 0,
             currentOrgan: null,
-            shownFacts: new Set()
+            lastFactIndex: -1
         };
 
         const el = {
@@ -839,11 +867,13 @@
             nextFactBtn: document.getElementById('nextFactBtn'),
             closeModalBtn: document.getElementById('closeModalBtn'),
             miniQuizBtn:    document.getElementById('miniQuizBtn'),
-            fullQuizBtn:    document.getElementById('fullQuizBtn'),
             miniQuizOverlay: document.getElementById('miniQuizOverlay'),
             miniQuizContainer: document.getElementById('miniQuizContainer'),
             miniQuizProgress: document.getElementById('miniQuizProgress'),
             closeMiniQuizBtn: document.getElementById('closeMiniQuizBtn'),
+            videoPlayBtn: document.getElementById('videoPlayBtn'),
+            playIcon: document.getElementById('playIcon'),
+            pauseIcon: document.getElementById('pauseIcon'),
             quizContainer: document.getElementById('quizContainer'),
             quizProgress:  document.getElementById('quizProgress'),
             resultScore:   document.getElementById('resultScore'),
@@ -853,7 +883,7 @@
         // 10 фактов для каждого органа
         const organsData = {
             brain: {
-                title: '🧠 Головной мозг',
+                title: ' Головной мозг',
                 video: 'brain.mp4',
                 facts: [
                     'Мозг собаки обрабатывает информацию в 10 раз быстрее человеческого.',
@@ -918,7 +948,6 @@
             }
         };
 
-        // Пул из 10 вопросов для викторины
         const quizQuestionPool = [
             {
                 question: 'Какой длины кишечник собаки?',
@@ -972,7 +1001,6 @@
             }
         ];
 
-        // Перемешивание массива
         function shuffleArray(array) {
             const shuffled = [...array];
             for (let i = shuffled.length - 1; i > 0; i--) {
@@ -1012,10 +1040,10 @@
         el.soundToggle.addEventListener('click', toggleSound);
         el.startBtn.addEventListener('click', startGame);
         el.closeModalBtn.addEventListener('click', closeModal);
-        el.nextFactBtn.addEventListener('click', showNextFact);
+        el.nextFactBtn.addEventListener('click', showRandomFact);
         el.miniQuizBtn.addEventListener('click', startMiniQuiz);
-        el.fullQuizBtn.addEventListener('click', startFullQuiz);
         el.closeMiniQuizBtn.addEventListener('click', closeMiniQuiz);
+        el.videoPlayBtn.addEventListener('click', toggleVideoPlay);
 
         document.querySelectorAll('.organ-zone').forEach(zone => {
             zone.addEventListener('click', (e) => {
@@ -1036,7 +1064,7 @@
 
         function toggleSound() {
             el.bgVideo.muted = !el.bgVideo.muted;
-            el.soundIcon.textContent = el.bgVideo.muted ? '🔇' : '';
+            el.soundIcon.textContent = el.bgVideo.muted ? '' : '';
         }
 
         function startGame() {
@@ -1049,20 +1077,90 @@
             el.bodyLayer.style.maskImage = 'radial-gradient(circle 0px at 50% 50%, transparent 0%, black 100%)';
         }
 
-        // ===== ORGAN MODAL WITH RANDOM FACTS =====
+        // ===== УПРАВЛЕНИЕ ВИДЕО =====
+        function toggleVideoPlay() {
+            if (el.modalVideo.paused) {
+                el.modalVideo.play();
+                el.playIcon.style.display = 'none';
+                el.pauseIcon.style.display = 'block';
+                el.videoPlayBtn.classList.add('hidden');
+            } else {
+                el.modalVideo.pause();
+                el.playIcon.style.display = 'block';
+                el.pauseIcon.style.display = 'none';
+                el.videoPlayBtn.classList.remove('hidden');
+            }
+        }
+
+        // Скрывать кнопку play когда видео играет
+        el.modalVideo.addEventListener('play', () => {
+            el.playIcon.style.display = 'none';
+            el.pauseIcon.style.display = 'block';
+            el.videoPlayBtn.classList.add('hidden');
+        });
+
+        el.modalVideo.addEventListener('pause', () => {
+            el.playIcon.style.display = 'block';
+            el.pauseIcon.style.display = 'none';
+            el.videoPlayBtn.classList.remove('hidden');
+        });
+
+        el.modalVideo.addEventListener('ended', () => {
+            el.playIcon.style.display = 'block';
+            el.pauseIcon.style.display = 'none';
+            el.videoPlayBtn.classList.remove('hidden');
+        });
+
+        // ===== ПОКАЗАТЬ СЛУЧАЙНЫЙ ФАКТ =====
+        function showRandomFact() {
+            const data = organsData[state.currentOrgan];
+            if (!data) return;
+
+            let randomIndex;
+            
+            do {
+                randomIndex = Math.floor(Math.random() * data.facts.length);
+            } while (randomIndex === state.lastFactIndex && data.facts.length > 1);
+            
+            state.lastFactIndex = randomIndex;
+            
+            el.modalFact.style.animation = 'none';
+            setTimeout(() => {
+                el.modalFact.textContent = data.facts[randomIndex];
+                el.modalFact.style.animation = 'fadeIn 0.3s ease';
+            }, 10);
+        }
+
+        // ===== ORGAN MODAL =====
         function openOrganModal(organKey) {
             const data = organsData[organKey];
             if (!data) return;
 
             state.currentOrgan = organKey;
-            state.shownFacts.clear();
+            state.lastFactIndex = -1;
 
             el.modalTitle.textContent = data.title;
             
             const source = el.modalVideo.querySelector('source');
             source.src = data.video;
             el.modalVideo.load();
-            el.modalVideo.play().catch(() => {});
+            
+            // Сбросить иконку на play
+            el.playIcon.style.display = 'block';
+            el.pauseIcon.style.display = 'none';
+            el.videoPlayBtn.classList.remove('hidden');
+            
+            // Автовоспроизведение
+            el.modalVideo.play().then(() => {
+                el.playIcon.style.display = 'none';
+                el.pauseIcon.style.display = 'block';
+                el.videoPlayBtn.classList.add('hidden');
+            }).catch(() => {
+                // Если autoplay заблокирован, показать кнопку play
+                el.playIcon.style.display = 'block';
+                el.pauseIcon.style.display = 'none';
+                el.videoPlayBtn.classList.remove('hidden');
+            });
 
             showRandomFact();
 
@@ -1074,40 +1172,16 @@
             }
         }
 
-        function showRandomFact() {
-            const data = organsData[state.currentOrgan];
-            if (!data) return;
-
-            // Получаем факты, которые ещё не показывали
-            const availableFacts = data.facts.filter((_, idx) => !state.shownFacts.has(idx));
-            
-            // Если все факты показаны, сбрасываем
-            if (availableFacts.length === 0) {
-                state.shownFacts.clear();
-            }
-
-            // Выбираем случайный факт
-            const randomIndex = Math.floor(Math.random() * data.facts.length);
-            state.shownFacts.add(randomIndex);
-            
-            el.modalFact.textContent = data.facts[randomIndex];
-        }
-
-        function showNextFact() {
-            showRandomFact();
-        }
-
         function closeModal() {
             el.organModal.classList.remove('active');
             el.modalVideo.pause();
         }
 
-        // ===== MINI QUIZ WITH 4 RANDOM QUESTIONS =====
+        // ===== MINI QUIZ =====
         function startMiniQuiz() {
             state.miniQuizQuestion = 0;
             state.miniQuizScore = 0;
             
-            // Выбираем 4 случайных вопроса из пула
             state.currentMiniQuizQuestions = shuffleArray(quizQuestionPool).slice(0, 4);
             
             el.miniQuizOverlay.classList.add('active');
@@ -1161,7 +1235,7 @@
 
         function showMiniQuizResult() {
             let html = `<div style="text-align: center; padding: 1rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">${state.miniQuizScore === state.currentMiniQuizQuestions.length ? '🎉' : state.miniQuizScore >= 2 ? '👍' : ''}</div>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">${state.miniQuizScore === state.currentMiniQuizQuestions.length ? '🎉' : state.miniQuizScore >= 2 ? '' : ''}</div>
                 <div style="font-size: 1.5rem; color: var(--neon-cyan); margin-bottom: 0.5rem;">Результат</div>
                 <div style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;">${state.miniQuizScore}/${state.currentMiniQuizQuestions.length}</div>
                 <div style="color: var(--text-secondary);">
@@ -1178,14 +1252,13 @@
             el.miniQuizOverlay.classList.remove('active');
         }
 
-        // ===== FULL QUIZ WITH 4 RANDOM QUESTIONS =====
+        // ===== FULL QUIZ =====
         function startFullQuiz() {
             el.game.style.display = 'none';
             el.quiz.style.display = 'flex';
             state.currentQuestion = 0;
             state.score = 0;
             
-            // Выбираем 4 случайных вопроса из пула
             state.currentFullQuizQuestions = shuffleArray(quizQuestionPool).slice(0, 4);
             
             showFullQuizQuestion();
@@ -1246,7 +1319,7 @@
             if (state.score === state.currentFullQuizQuestions.length) {
                 el.resultText.textContent = 'Великолепно! Вы настоящий эксперт в анатомии! 🎉';
             } else if (state.score >= state.currentFullQuizQuestions.length / 2) {
-                el.resultText.textContent = 'Хороший результат! Продолжайте изучать анатомию! 👍';
+                el.resultText.textContent = 'Хороший результат! Продолжайте изучать анатомию! ';
             } else {
                 el.resultText.textContent = 'Неплохо! Попробуйте ещё раз, чтобы узнать больше! 💪';
             }
